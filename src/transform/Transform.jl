@@ -2,8 +2,12 @@ module Transform
 
 include("bitarray_utils.jl")
 include("abstracttransformer.jl")
-include("quantizer.jl")
+export AbstractTransformer, transform, invtransform
 
-export AbstractTransformer, Quantizer, transform, invtransform
+include("hamming.jl")
+export Hamming
+
+include("quantizer.jl")
+export Quantizer
 
 end # module

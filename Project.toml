@@ -4,4 +4,5 @@ authors = ["xiorcale <quentin.vaucher@protonmail.com>"]
 version = "0.1.0"
 
 [deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
