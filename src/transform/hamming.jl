@@ -102,6 +102,7 @@ function transform(hamming::Hamming, data::Vector{UInt8})::Tuple{BitVector,Int}
     data_pattern = error_pattern[hamming.num_paritybits + 1:end]
     
     decoded_msg = BitVector(@. data ⊻ data_pattern)
+    
     return (decoded_msg, error_index)
 end
 

@@ -42,7 +42,7 @@ end
     validate(store::Store, file::GDFile)
 
 Check wether `file` can be extracted by `store` or not by returning the list of
-unkown hashes used by `file`.
+unknown hashes used by `file`.
 """
 function validate(store::Store, file::GDFile)
     return setdiff(file.hashes, keys(store.database))

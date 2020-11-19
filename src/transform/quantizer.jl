@@ -5,7 +5,6 @@ Transformer which create a basis and deviation pair as follow:
 
 - basis: keep only the `bsize` MSB of each byte
 - deviation: keep the remaing `dsize` LSB of each byte
->>>>>>> master
 """
 struct Quantizer <: AbstractTransformer
     bsize::UInt8
@@ -15,7 +14,7 @@ struct Quantizer <: AbstractTransformer
     Quantizer(bsize) = begin
         dsize = 0x08 - bsize
         factor = 0x02 ^ dsize
-        return new(bsiye, dsize, factor)
+        return new(bsize, dsize, factor)
     end
 end
 

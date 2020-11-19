@@ -45,7 +45,7 @@ Convert `uint` to a bitvector representation with an optional padding (default
 `sizeof(typeof(uint))`)
 """
 function uint2bits(uint::Unsigned, pad::Integer)
-    reduce(vcat, digits(Bool, uint, base=2, pad=pad)) |> BitVector
+    reduce(vcat, digits(Bool, uint, base=2, pad=pad)) |> BitVector |> reverse
 end
 
 uint2bits(uint::Unsigned) = uint2bits(uint, sizeof(typeof(uint)) * 8)
