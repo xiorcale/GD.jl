@@ -8,12 +8,12 @@ include("chunkarray.jl")
 include("transform/Transform.jl")
 using .Transform
 
-
 # module
-
 include("compressor.jl")
-include("store.jl")
+export Compressor, GDFile, compress, extract
 
-export Compressor, load, dump, compress, compress!, extract, validate, get, GDFile, Store
+include("store.jl")
+export Store, compress!, extract, get, update!, validate
+
 
 end # module

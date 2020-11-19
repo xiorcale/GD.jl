@@ -1,9 +1,13 @@
 """
-    eye(size)
+Utility functions to work with BitArray and convert them from/to UInt8.
+"""
+
+"""
+    biteye(size)
 
 Return an identity matrix of size `size`.
 """
-function eye(size::Integer)::BitMatrix
+function biteye(size::Integer)::BitMatrix
     matrix = falses(size, size)
     map(i -> matrix[i,i] = 1, 1:size)
     return matrix

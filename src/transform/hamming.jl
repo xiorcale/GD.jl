@@ -14,38 +14,19 @@ struct Hamming <: AbstractTransformer
     p_sub_matrix::BitMatrix
     syndrome_table::Dict{Int,Int}
 
-    Hamming(
-        codeword_size,
-        num_paritybits,
-        p_sub_matrix,
-        syndrome_table
-    ) = new(
-        codeword_size,
-        num_paritybits,
-        p_sub_matrix,
-        syndrome_table
-    )
-
-    Hamming(codeword_size) = initialize_hamming(codeword_size)
-
-end
-
-"""
-    initialize_hamming(codeword_size)
-
-Create a `Hamming` transformer for chunk of size `codeword_size`.
-"""
-function initialize_hamming(codeword_size)::Hamming
-    num_paritybits = calculate_num_parity_bits(codeword_size)
-    p_sub_matrix = create_P_sub_matrix(codeword_size, num_paritybits)
-    syndrome_table = create_syndrome_table(codeword_size, num_paritybits, p_sub_matrix)
+    Hamming(codeword_size) = begin
+        codeword_size *= 8
+        num_paritybits = calculate_num_parity_bits(codeword_size)
+        p_sub_matrix = create_P_sub_matrix(codeword_size, num_paritybits)
+        syndrome_table = create_syndrome_table(codeword_size, num_paritybits, p_sub_matrix)
     
-    return Hamming(
-        codeword_size,
-        num_paritybits,
-        p_sub_matrix,
-        syndrome_table
-    )
+        return new(
+            codeword_size,
+            num_paritybits,
+            p_sub_matrix,
+            syndrome_table
+        )
+    end
 end
 
 """
@@ -83,7 +64,7 @@ end
 Create the syndrom table used to find the potential error index in the codeword.
 """
 function create_syndrome_table(codeword_size, num_paritybits, p_sub_matrix)
-    mateye = eye(num_paritybits)
+    mateye = biteye(num_paritybits)
     pt_sub_matrix = BitArray(transpose(p_sub_matrix))
     parity_check_matrix_T = transpose(hcat(mateye, pt_sub_matrix))
     syndrome_table = Dict(0 => -1)

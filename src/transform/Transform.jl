@@ -1,6 +1,7 @@
 module Transform
 
 include("bitarray_utils.jl")
+
 include("abstracttransformer.jl")
 export AbstractTransformer, transform, invtransform
 
