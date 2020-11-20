@@ -24,9 +24,6 @@ struct GDFile{T <: Integer}
 end
 
 
-function load(compressor::Compressor, path::String) end
-function dump(compressor::Compressor, path::String) end
-
 """
     hash(compressor::Compressor, data::Vector{Vector{UInt8}})
 
@@ -34,7 +31,7 @@ Hash each element in `data` with the `compressor.fingerprint` and return an
 array of hashes.
 """
 function hash(compressor::Compressor, data::Vector{Vector{UInt8}})
-    return [compressor.fingerprint(d) for d ∈ data]
+    return compressor.fingerprint.(data)
 end
 
 """

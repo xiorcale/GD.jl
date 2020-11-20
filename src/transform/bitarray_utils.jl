@@ -2,6 +2,8 @@
 Utility functions to work with BitArray and convert them from/to UInt8.
 """
 
+using Base.Iterators: partition
+
 """
     biteye(size)
 
@@ -14,38 +16,28 @@ function biteye(size::Integer)::BitMatrix
 end
 
 """
-    bits2uint([T<:Integer], bitarray)
+    tobytes(bitarray)
 
-Convert `bitarray` to an unsigned integer representation of type `T` (default
-`UInt8`).
+Pack a bit array into a compact byte array. If the bitarray is not divisible by
+8, the remaining bits will be padded into 1 byte.
 """
-function bits2uint end
-
-function bits2uint(T::Type{<:Unsigned}, bitarray::BitVector)
-    size = length(bitarray)
-    return mapreduce(+, 1:size) do i
-        bitarray[i] ? 2 ^ (size-i) : 0
-    end |> T
+function tobytes(T::Type{<:Unsigned}, bitarray)
+    [
+        sum([2^(i - 1) for (i, b) in enumerate(byte) if b == 1]) |> T
+        for byte in partition(bitarray, 8)
+    ]
 end
 
-function bits2uint(T::Type{<:Unsigned}, bitarray::String)
-    size = length(bitarray)
-    return mapreduce(+, 1:size) do i
-        bitarray[i] == '1' ? 2 ^ (size-i) : 0
-    end |> T
-end
-
-bits2uint(bitvector::BitVector) = bits2uint(UInt8, bitvector)
-bits2uint(bitstr::String) = bits2uint(UInt8, bitstr)
+tobytes(bitarray) = tobytes(UInt8, bitarray)
 
 """
-    uint2bits(uint::Unsigned, [pad::Integer])
+    tobits(data::Vector{UInt8}, [pad=8])
 
-Convert `uint` to a bitvector representation with an optional padding (default
-`sizeof(typeof(uint))`)
+Unpack a byte array into an array of bitarray, where each byte is padded on 8 
+bits by default.
+
+/!/ Note that the LSB is in first position of the bitarray.
 """
-function uint2bits(uint::Unsigned, pad::Integer)
-    reduce(vcat, digits(Bool, uint, base=2, pad=pad)) |> BitVector |> reverse
+function tobits(data::Vector{UInt8}; pad=8)
+    reduce(vcat, @. digits(Bool, data, base=2, pad=pad) |> BitVector)
 end
-
-uint2bits(uint::Unsigned) = uint2bits(uint, sizeof(typeof(uint)) * 8)
