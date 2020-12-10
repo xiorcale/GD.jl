@@ -2,7 +2,7 @@ module Transform
 
 include("bitarray_utils.jl")
 
-include("abstracttransformer.jl")
+include("abstract_transformer.jl")
 export AbstractTransformer, transform, invtransform
 
 include("hamming.jl")

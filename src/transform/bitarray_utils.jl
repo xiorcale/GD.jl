@@ -15,20 +15,35 @@ function biteye(size::Integer)::BitMatrix
     return matrix
 end
 
-"""
-    tobytes(bitarray)
+function tobyte(bitvec::BitVector)::UInt8
+    size = length(bitvec)
+    sum = 0
+    for (i, bit) in enumerate(bitvec)
+        if bit == 1
+            sum += 2 ^ (size - i)
+        end
+    end
 
-Pack a bit array into a compact byte array. If the bitarray is not divisible by
-8, the remaining bits will be padded into 1 byte.
-"""
-function tobytes(T::Type{<:Unsigned}, bitarray)
-    [
-        sum([2^(i - 1) for (i, b) in enumerate(byte) if b == 1]) |> T
-        for byte in partition(bitarray, 8)
-    ]
+    return sum
 end
 
-tobytes(bitarray) = tobytes(UInt8, bitarray)
+function tobytes(bitvec::BitVector)::Vector{UInt8}
+    num_bytes = length(bitvec) / 8 |> Int
+    leftover = length(bitvec) % 8
+    size = leftover > 0 ? num_bytes + 1 : num_bytes
+
+    bytes = Vector{UInt8}(undef, size)
+    for i in 1:num_bytes
+        bytes[i] = tobyte(bitvec[(i-1)*8+1:i*8])
+    end
+
+    if leftover > 0
+        bytes[size] = tobyte[(i-1)*8+1 : (i-1)*8+leftover]
+    end
+
+    return bytes
+end
+
 
 """
     tobits(data::Vector{UInt8}, [pad=8])
@@ -38,6 +53,15 @@ bits by default.
 
 /!/ Note that the LSB is in first position of the bitarray.
 """
-function tobits(data::Vector{UInt8}; pad=8)
-    reduce(vcat, @. digits(Bool, data, base=2, pad=pad) |> BitVector)
+function tobits(data::Vector{UInt8})
+    bitArray = BitVector(undef, 8 * length(data))
+    masks = [1 << i for i in 7:-1:0]
+
+    for (i, byte) in enumerate(data)
+        for (j, mask) in enumerate(masks)
+            bitArray[(i-1)*8+j] = byte & mask > 0
+        end
+    end
+
+    return bitArray
 end
