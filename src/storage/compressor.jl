@@ -5,9 +5,9 @@ Compress/Extract data according to the loaded configuration. A `Compressor` is
 stateless. It is focused on data compression/extraction but does not store any
 value for deduplication.
 """
-mutable struct Compressor{T <:AbstractTransformer}
+mutable struct Compressor
     chunksize::Int
-    transformer::T
+    transformer::AbstractTransformer
     fingerprint::Function
 end
 
@@ -30,8 +30,8 @@ end
 Hash each element in `data` with the `compressor.fingerprint` and return an
 array of hashes.
 """
-function hash(compressor::Compressor, data::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}
-    return compressor.fingerprint.(data)
+function hash(c::Compressor, data::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}
+    return c.fingerprint.(data)
 end
 
 """
@@ -40,26 +40,29 @@ end
 Return a compressed version of `data`, as well as the bases which need to be
 sotred by `compressor` for reconstructing `data`. 
 """
-function compress(compressor::Compressor, bytes::Vector{UInt8})
-    chunkarray = ChunkArray(bytes, compressor.chunksize)
+function compress(c::Compressor, bytes::Vector{UInt8})
+    chunkarray = ChunkArray(bytes, c.chunksize)
     bases = similar(chunkarray, Vector{UInt8})
     deviations = similar(chunkarray, Vector{UInt8})
     for (i, chunk) ∈ enumerate(chunkarray)
-        bases[i], deviations[i] = transform(compressor.transformer, chunk)
+        bases[i], deviations[i] = transform(c.transformer, chunk)
     end
 
-    return GDFile(hash(compressor, bases), deviations, chunkarray.padsize), bases
+    return GDFile(hash(c, bases), deviations, chunkarray.padsize), bases
 end
 
 """
-    extract(compressor::Compressor, bases::Vector{UInt8}, file::GDFile)
+    extract(compressor::Compressor, bases::Vector{UInt8}, gdfile::GDFile)
 
-Decompress `file` into its original representation.
+Decompress `gdfile` into its original representation.
 """
-function extract(compressor::Compressor, bases::Vector{Vector{UInt8}}, file::GDFile)
-    bytes = reduce(vcat, [
-        invtransform(compressor.transformer, b, d)
-        for (b, d) in zip(bases, file.deviations)
-    ])
-    return bytes[1:end-file.padsize]
+function extract(c::Compressor, bases::Vector{Vector{UInt8}}, gdfile::GDFile)
+    bytes = reduce(
+        vcat,
+        [
+            invtransform(c.transformer, b, d)
+            for (b, d) in zip(bases, gdfile.deviations)
+        ],
+    )
+    return bytes[1:end-gdfile.padsize]
 end

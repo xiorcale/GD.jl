@@ -3,7 +3,16 @@ module GD
 include("transform/Transform.jl")
 using .Transform
 
-include("gdstore/Gdstore.jl")
-using .Gdstore
+include("storage/chunkarray.jl")
+export ChunkArray
+
+include("storage/compressor.jl")
+export Compressor, GDFile, compress, extract
+
+include("storage/store.jl")
+export Store, compress!, extract, get, update!, validate
+
+include("storage/api.jl")
+export validate_remote!, return_bases
 
 end # module

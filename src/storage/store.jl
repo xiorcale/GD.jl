@@ -13,9 +13,9 @@ end
 
 Update `store.database` by mapping `hashes` to `bases`.
 """
-function update!(store::Store, hashes::Vector{Vector{UInt8}}, bases::Vector{Vector{UInt8}})
+function update!(s::Store, hashes::Vector{Vector{UInt8}}, bases::Vector{Vector{UInt8}})
     for (h, b) ∈ zip(hashes, bases)
-        store.database[h] = b
+        s.database[h] = b
     end
 end
 
@@ -24,9 +24,9 @@ end
 
 Store the `bytes` bases into `store` and return a compressed version of `bytes`.
 """
-function compress!(store::Store, bytes::Vector{UInt8})::GDFile
-    file, bases = compress(store.compressor, bytes)
-    update!(store, file.hashes, bases)
+function compress!(s::Store, bytes::Vector{UInt8})::GDFile
+    file, bases = compress(s.compressor, bytes)
+    update!(s, file.hashes, bases)
     return file
 end
 
@@ -35,9 +35,9 @@ end
 
 Decompress `file` into its original representation.
 """
-function extract(store::Store, file::GDFile)::Vector{UInt8}
-    bases = get(store, file.hashes)
-    return extract(store.compressor, bases, file)
+function extract(s::Store, gdfile::GDFile)::Vector{UInt8}
+    bases = get(s, gdfile.hashes)
+    return extract(s.compressor, bases, gdfile)
 end
 
 """
@@ -46,8 +46,8 @@ end
 Check wether `file` can be extracted by `store` or not by returning the list of
 unknown hashes used by `file`.
 """
-function validate(store::Store, file::GDFile)::Vector{Vector{UInt8}}
-    return setdiff(file.hashes, keys(store.database))
+function validate(s::Store, gdfile::GDFile)::Vector{Vector{UInt8}}
+    return setdiff(gdfile.hashes, keys(s.database))
 end
 
 """
@@ -55,6 +55,6 @@ end
 
 return the values mapped to `hashes` in `store`.
 """
-function get(store::Store, hashes::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}
-    return [store.database[hash] for hash in hashes]
+function get(s::Store, hashes::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}
+    return [s.database[hash] for hash in hashes]
 end

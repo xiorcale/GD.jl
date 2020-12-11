@@ -7,7 +7,7 @@ using Base.Iterators: partition
 """
     biteye(size)
 
-Return an identity matrix of size `size`.
+Return an identity matrix of dim (`size`, `size`).
 """
 function biteye(size::Integer)::BitMatrix
     matrix = falses(size, size)
@@ -15,6 +15,11 @@ function biteye(size::Integer)::BitMatrix
     return matrix
 end
 
+"""
+    tobyte(bitvec)
+
+Convert `bitvec` into ONE byte. Therfore, `length(bitvec)` must be `<= 8`.
+"""
 function tobyte(bitvec::BitVector)::UInt8
     size = length(bitvec)
     sum = 0
@@ -27,6 +32,12 @@ function tobyte(bitvec::BitVector)::UInt8
     return sum
 end
 
+"""
+    tobytes(bitvec)
+
+Pack `bitvec` into a compact array of byte. If `bitvec` is not divisible by 8,
+the remaining bits will be "padded" into one byte.
+"""
 function tobytes(bitvec::BitVector)::Vector{UInt8}
     num_bytes = length(bitvec) / 8 |> Int
     leftover = length(bitvec) % 8
@@ -51,7 +62,7 @@ end
 Unpack a byte array into an array of bitarray, where each byte is padded on 8 
 bits by default.
 
-/!/ Note that the LSB is in first position of the bitarray.
+/!/ Note that the MSB is in first position of the bitarray.
 """
 function tobits(data::Vector{UInt8})
     bitArray = BitVector(undef, 8 * length(data))
