@@ -1,7 +1,7 @@
 """
     Store(database)
 """
-struct Store
+mutable struct Store
     compressor::Compressor
     database::Dict{Vector{UInt8}, Vector{UInt8}}
     num_unknown_bases::Int
