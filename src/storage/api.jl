@@ -25,7 +25,7 @@ function validate_remote!(s::Store, gdfile::GDFile, baseurl::String)::Int
 
         # decode the response and update the store
         response = HTTP.request("GET", endpoint, [], body)
-        bases = IOBuffer(response) |> deserialize
+        bases = IOBuffer(response.body) |> deserialize
         update!(s, unknown_hashes, bases)
     end
 
