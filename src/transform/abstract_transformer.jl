@@ -11,7 +11,7 @@ abstract type AbstractTransformer end
 Apply the `transformer` transformation to `data` and return a split 
 representation under the form (`basis`, `deviation`).
 """
-function transform(transformer::AbstractTransformer, data::Vector{UInt8}) 
+function transform(transformer::AbstractTransformer, data::Vector{T}) where T <: Unsigned 
     transform(transformer, data)
 end
 

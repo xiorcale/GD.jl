@@ -8,23 +8,26 @@ Transformer which create a basis and deviation pair as follow:
 - basis: keep only the `msbsize` MSB of each byte
 - deviation: keep the remaing `lsbsize` LSB of each byte
 """
-struct Quantizer <: AbstractTransformer
-    lsbsize::UInt8
-    msbsize::UInt8
+struct Quantizer{T <: Unsigned} <: AbstractTransformer
+    dtype::Type{T}
+    numbits::Int
+    lsbsize::T
+    msbsize::T
     bpad::UInt8
     dpad::UInt8
     chhunksize::Int
 
-    Quantizer(chunksize, msbsize) = begin
-        lsbsize = 0x08 - msbsize
+    Quantizer{T}(chunksize, msbsize) where T <: Unsigned = begin
+        numbits = 8 * sizeof(T)
+        lsbsize = numbits - msbsize
 
         bsize = chunksize * msbsize
         dsize = chunksize * lsbsize
 
-        bpad = ceil(bsize / 8) * 8 - bsize |> UInt8
-        dpad = ceil(dsize / 8) * 8 - dsize |> UInt8
+        bpad = ceil(bsize / numbits) * numbits - bsize |> UInt8
+        dpad = ceil(dsize / numbits) * numbits - dsize |> UInt8
 
-        return new(lsbsize, msbsize, bpad, dpad, chunksize)
+        return new(T, numbits, lsbsize, msbsize, bpad, dpad, chunksize)
     end
 end
 
@@ -32,29 +35,32 @@ end
 """
     transform(quantizer::Quantizer, data::Vector{UInt8})
 
-Cut each byte into a basis containing the `quantizer.msbsize` MSB of the byte,
-and a deviation containing the `quantizer.lsbsize` LSB of the byte.
+Cut each element from data into a basis containing the `quantizer.msbsize` MSB 
+of the element, and a deviation containing the `quantizer.lsbsize` LSB of the
+element.
 
 Return the concatenation of the MSB of the bytes as the `basis`, and the 
 concatenation of the LSB of the bytes as the `deviation.`
 """
-function transform(q::Quantizer, data::Vector{UInt8})
+function transform(q::Quantizer, data::Vector{T}) where T <: Unsigned
     # expand bytes into bitarray
     data_bits = tobits(data)
     basis_bits = BitVector(undef, q.chhunksize * q.msbsize + q.bpad)
     dev_bits = BitVector(undef, q.chhunksize * q.lsbsize + q.dpad)
     
-    # iterate over bytes
+    # iterate over data elements
     for i in 1:q.chhunksize
+
+        start = (i - 1) * q.numbits
 
         # extract msb
         for j in 1:q.msbsize
-            basis_bits[(i - 1) * q.msbsize + j] = data_bits[(i - 1) * 8 + j]
+            basis_bits[(i - 1) * q.msbsize + j] = data_bits[start + j]
         end
 
         # extract lsb
         for j in 1:q.lsbsize
-            dev_bits[(i - 1) * q.lsbsize + j] = data_bits[(i - 1) * 8 + q.msbsize + j]
+            dev_bits[(i - 1) * q.lsbsize + j] = data_bits[start + q.msbsize + j]
         end
     end
 
@@ -82,20 +88,21 @@ function invtransform(q::Quantizer, basis::Vector{UInt8}, deviation::Vector{UInt
     data_bits = BitVector(undef, length(basis_bits) + length(deviation_bits))
 
     # glue LSB and MSB together
-    stop = (length(data_bits) / 8) |> Int
+    stop = (length(data_bits) / q.numbits) |> Int
     for i in 1:stop
         
+        start = (i - 1) * q.numbits
         for j in 1:q.msbsize
-            data_bits[(i - 1) * 8 + j] = basis_bits[(i - 1) * q.msbsize + j]
+            data_bits[start + j] = basis_bits[(i - 1) * q.msbsize + j]
         end
 
         for j in 1:q.lsbsize
-            data_bits[(i - 1) * 8 + q.msbsize + j] = deviation_bits[(i - 1) * q.lsbsize + j]
+            data_bits[start + q.msbsize + j] = deviation_bits[(i - 1) * q.lsbsize + j]
         end
     end
 
-    # repack the bits into the original bytes array
-    data = tobytes(data_bits)
+    # repack the bits into the original array
+    data = map(elem -> to_T(q.dtype, BitArray(elem)), partition(data_bits, q.numbits))
     
     return data
 end
