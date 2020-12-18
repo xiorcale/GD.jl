@@ -42,8 +42,11 @@ function return_bases(s::Store, req::HTTP.Request)
     # decode request body
     hashes = IOBuffer(req.body) |> deserialize
     
-    # record stats
-    s.num_requested_bases += length(hashes)
+    # record stats -> since it is an endpoint, a lock is required in case
+    # multiple call occurs concurrently.
+    lock(s.num_requested_bases) do
+        s.num_requested_bases += length(hashes)
+    end
     
     # retreive the bases from the cache
     bases = get(s, hashes)
