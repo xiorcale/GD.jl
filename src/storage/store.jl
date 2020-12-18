@@ -20,12 +20,12 @@ function update!(s::Store, hashes::Vector{Vector{UInt8}}, bases::Vector{Vector{U
 end
 
 """
-    compress!(store::Store, bytes::Vector{UInt8})
+    compress!(store::Store, data::Vector{UInt8})
 
-Store the `bytes` bases into `store` and return a compressed version of `bytes`.
+Store the `data` bases into `store` and return a compressed version of `data`.
 """
-function compress!(s::Store, bytes::Vector{UInt8})::GDFile
-    file, bases = compress(s.compressor, bytes)
+function compress!(s::Store, data::Vector{T})::GDFile where T <: Unsigned
+    file, bases = compress(s.compressor, data)
     update!(s, file.hashes, bases)
     return file
 end
@@ -35,7 +35,7 @@ end
 
 Decompress `file` into its original representation.
 """
-function extract(s::Store, gdfile::GDFile)::Vector{UInt8}
+function extract(s::Store, gdfile::GDFile)::Vector
     bases = get(s, gdfile.hashes)
     return extract(s.compressor, bases, gdfile)
 end

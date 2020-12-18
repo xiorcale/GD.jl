@@ -35,13 +35,13 @@ function hash(c::Compressor, data::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}
 end
 
 """
-    compress(compressor::Compressor, data::Vector{UInt8})
+    compress(compressor::Compressor, data::Vector{T})
 
 Return a compressed version of `data`, as well as the bases which need to be
 sotred by `compressor` for reconstructing `data`. 
 """
-function compress(c::Compressor, bytes::Vector{UInt8})
-    chunkarray = ChunkArray(bytes, c.chunksize)
+function compress(c::Compressor, data::Vector{T}) where T <: Unsigned
+    chunkarray = ChunkArray{UInt16}(data, c.chunksize)
     bases = similar(chunkarray, Vector{UInt8})
     deviations = similar(chunkarray, Vector{UInt8})
     for (i, chunk) ∈ enumerate(chunkarray)
@@ -57,12 +57,12 @@ end
 Decompress `gdfile` into its original representation.
 """
 function extract(c::Compressor, bases::Vector{Vector{UInt8}}, gdfile::GDFile)
-    bytes = reduce(
+    data = reduce(
         vcat,
         [
             invtransform(c.transformer, b, d)
             for (b, d) in zip(bases, gdfile.deviations)
         ],
     )
-    return bytes[1:end-gdfile.padsize]
+    return data[1:end-gdfile.padsize]
 end
