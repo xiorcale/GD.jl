@@ -47,7 +47,7 @@ function tobytes(bitvec::BitVector)::Vector{UInt8}
 
     bytes = Vector{UInt8}(undef, size)
     i = 1
-    for i in 1:num_bytes
+    @inbounds for i in 1:num_bytes
         bytes[i] = to_T(UInt8, bitvec[(i-1)*8+1:i*8])
     end
 
@@ -74,7 +74,7 @@ function tobits(data::Vector{T}) where T <: Unsigned
 
     for (i, elem) in enumerate(data)
         start = (i - 1) * numbits
-        for (j, mask) in enumerate(masks)
+        @inbounds for (j, mask) in enumerate(masks)
             bit_array[start+j] = elem & mask > 0
         end
     end

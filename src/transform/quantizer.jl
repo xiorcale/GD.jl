@@ -54,12 +54,12 @@ function transform(q::Quantizer, data::Vector{T}) where T <: Unsigned
         start = (i - 1) * q.numbits
 
         # extract msb
-        for j in 1:q.msbsize
+        @inbounds for j in 1:q.msbsize
             basis_bits[(i - 1) * q.msbsize + j] = data_bits[start + j]
         end
 
         # extract lsb
-        for j in 1:q.lsbsize
+        @inbounds for j in 1:q.lsbsize
             dev_bits[(i - 1) * q.lsbsize + j] = data_bits[start + q.msbsize + j]
         end
     end
@@ -92,11 +92,11 @@ function invtransform(q::Quantizer, basis::Vector{UInt8}, deviation::Vector{UInt
     for i in 1:stop
         
         start = (i - 1) * q.numbits
-        for j in 1:q.msbsize
+        @inbounds for j in 1:q.msbsize
             data_bits[start + j] = basis_bits[(i - 1) * q.msbsize + j]
         end
 
-        for j in 1:q.lsbsize
+        @inbounds for j in 1:q.lsbsize
             data_bits[start + q.msbsize + j] = deviation_bits[(i - 1) * q.lsbsize + j]
         end
     end

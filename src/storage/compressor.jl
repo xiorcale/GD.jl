@@ -41,10 +41,11 @@ Return a compressed version of `data`, as well as the bases which need to be
 sotred by `compressor` for reconstructing `data`. 
 """
 function compress(c::Compressor, data::Vector{T}) where T <: Unsigned
-    chunkarray = ChunkArray{UInt16}(data, c.chunksize)
+    chunkarray = ChunkArray{T}(data, c.chunksize)
     bases = similar(chunkarray, Vector{UInt8})
     deviations = similar(chunkarray, Vector{UInt8})
-    for (i, chunk) ∈ enumerate(chunkarray)
+    
+    @inbounds for (i, chunk) ∈ enumerate(chunkarray)
         bases[i], deviations[i] = transform(c.transformer, chunk)
     end
 
