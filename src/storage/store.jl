@@ -4,8 +4,11 @@
 mutable struct Store
     compressor::Compressor
     database::Dict{Vector{UInt8}, Vector{UInt8}}
+    l::ReentrantLock
     num_unknown_bases::Int
     num_requested_bases::Int
+
+    Store(c, d, nub, nrb) = new(c, d, ReentrantLock(), nub, nrb)
 end
 
 """

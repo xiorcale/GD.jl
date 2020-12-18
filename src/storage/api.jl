@@ -44,7 +44,7 @@ function return_bases(s::Store, req::HTTP.Request)
     
     # record stats -> since it is an endpoint, a lock is required in case
     # multiple call occurs concurrently.
-    lock(s.num_requested_bases) do
+    lock(s.l) do
         s.num_requested_bases += length(hashes)
     end
     
