@@ -6,8 +6,11 @@ using .Transform
 include("storage/chunkarray.jl")
 export ChunkArray
 
+include("storage/gdfile.jl")
+export GDFile, patch!, unpatch!
+
 include("storage/compressor.jl")
-export Compressor, GDFile, compress, extract
+export Compressor, compress, extract
 
 include("storage/store.jl")
 export Store, compress!, extract, get, update!, validate

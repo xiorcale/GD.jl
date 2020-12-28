@@ -8,9 +8,6 @@ export AbstractTransformer, transform, invtransform
 include("hamming.jl")
 export Hamming
 
-include("permuter.jl")
-export Permuter
-
 include("quantizer.jl")
 export Quantizer
 

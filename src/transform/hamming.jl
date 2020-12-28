@@ -12,7 +12,7 @@ struct Hamming <: AbstractTransformer
     codeword_size::Int
     num_paritybits::Int
     p_sub_matrix::BitMatrix
-    syndrome_table::Dict{Int32,Int32}
+    syndrome_table::Dict{Any, Any}
 
     Hamming(codeword_size) = begin
         codeword_size *= 8
@@ -35,7 +35,7 @@ end
 Calculate the number of parity bits used for a codeword of size `codeword_size`.
 """
 function calculate_num_parity_bits(codeword_size)
-    for num_paritybits ∈ 1:codeword_size
+    for num_paritybits in 1:codeword_size
         2^num_paritybits >= codeword_size + 1 && return num_paritybits
     end
 end
@@ -67,12 +67,12 @@ function create_syndrome_table(codeword_size, num_paritybits, p_sub_matrix)
     mateye = biteye(num_paritybits)
     pt_sub_matrix = BitArray(transpose(p_sub_matrix))
     parity_check_matrix_T = transpose(hcat(mateye, pt_sub_matrix))
-    syndrome_table = Dict(0 => -1)
+    syndrome_table = Dict{UInt64, Int64}(0 => -1)
 
     for error_index in 1:codeword_size
         # extrace the row instead of performing a dot product full of 0
         binary_error = parity_check_matrix_T[error_index, :] 
-        syndrome = tobytes(UInt64, binary_error)[1]
+        syndrome = bits2uint(UInt64, binary_error)
         syndrome_table[syndrome] = error_index
     end
 
@@ -94,7 +94,7 @@ function transform(hamming::Hamming, data::Vector{UInt8})
     
     syndrome = map(col -> dot(data, col), eachcol(hamming.p_sub_matrix)) + parity_bits
     syndrome = BitArray(syndrome .& 1)
-    syndrome = tobytes(UInt64, syndrome)[1]
+    syndrome = bits2uint(UInt64, syndrome)
     
     error_index = hamming.syndrome_table[syndrome]
     
@@ -118,7 +118,7 @@ index `deviation`.
 return the original byte array to which `transform()` has been applied.
 """
 function invtransform(hamming::Hamming, basis::Vector{UInt8}, deviation::Int32)
-    # transforming the bit array into bytes add some padding on the last byte
+    # transforming the bitarray into bytes, add some padding on the last byte
     padding = hamming.num_paritybits % 8
     message = tobits(basis)[1:end-padding]
     parity_bits = BitVector(map(col -> dot(message, col) & 1, eachcol(hamming.p_sub_matrix)))
