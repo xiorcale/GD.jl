@@ -21,30 +21,34 @@ diff(x::Vector{UInt8}, y::Vector{UInt8}) = (x == y ? [0x00] : x)
 
 
 """
-    patch!(gdfile1, gdfile2)
+    patch(gdfile1, gdfile2)
 
-Patches `gdfile1` by replacing the hashes/deviations which are the same as
+Creates a patched `gdfile1` by replacing the hashes/deviations which are the same as
 `gdfile2` by `0x00`.
 """
-function patch!(gdfile1::GDFile, gdfile2::GDFile)
-    gdfile1.hashes = diff.(gdfile1.hashes, gdfile2.hashes)
-    gdfile1.deviations = diff.(gdfile1.deviations, gdfile2.deviations)
+function patch(gdfile1::GDFile, gdfile2::GDFile)::GDFile
+    hashes = diff.(gdfile1.hashes, gdfile2.hashes)
+    deviations = diff.(gdfile1.deviations, gdfile2.deviations)
+    return GDFile(hashes, deviations, gdfile1.padsize)
 end
 
 
 """
-    unpatch!(gdfile1, gdfile2)
+    unpatch(gdfile1, gdfile2)
 
-Reverse `patch!()` by replaxing `0x00` in `gdfile1` by the value contianed in
-`gdfile2`.
+Creates an unpachted `gdfile1` by repalcing `0x00` from `gdfile1` by the value
+contianed in `gdfile2`.
 """
-function unpatch!(gdfile1::GDFile, gdfile2::GDFile)
+function unpatch(gdfile1::GDFile, gdfile2::GDFile)::GDFile
+    hashes = Vector{Vector{UInt8}}(undef, length(gdfile1.hashes))
+    deviations = Vector{Vector{UInt8}}(undef, length(gdfile1.deviations))
     for i in 1:length(gdfile1.hashes)
         if gdfile1.hashes[i] == [0x00]
-            gdfile1.hashes[i] = gdfile2.hashes[i]
+            hashes[i] = gdfile2.hashes[i]
         end
         if gdfile1.deviations[i] == [0x00]
-            gdfile1.deviations[i] = gdfile2.deviations[i]
+            deviations[i] = gdfile2.deviations[i]
         end
     end
+    return GDFile(hashes, deviations, gdfile1.padsize)
 end

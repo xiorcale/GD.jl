@@ -7,7 +7,7 @@ include("storage/chunkarray.jl")
 export ChunkArray
 
 include("storage/gdfile.jl")
-export GDFile, patch!, unpatch!
+export GDFile, patch, unpatch
 
 include("storage/compressor.jl")
 export Compressor, compress, extract
