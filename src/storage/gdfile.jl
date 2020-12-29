@@ -40,15 +40,17 @@ Creates an unpachted `gdfile1` by repalcing `0x00` from `gdfile1` by the value
 contianed in `gdfile2`.
 """
 function unpatch(gdfile1::GDFile, gdfile2::GDFile)::GDFile
-    hashes = Vector{Vector{UInt8}}(undef, length(gdfile1.hashes))
-    deviations = Vector{Vector{UInt8}}(undef, length(gdfile1.deviations))
-    for i in 1:length(gdfile1.hashes)
-        if gdfile1.hashes[i] == [0x00]
+    hashes = deepcopy(gdfile1.hashes)
+    deviations = deepcopy(gdfile1.deviations)
+
+    for i in 1:length(hashes)
+        if hashes[i] == [0x00]
             hashes[i] = gdfile2.hashes[i]
         end
-        if gdfile1.deviations[i] == [0x00]
+        if deviations[i] == [0x00]
             deviations[i] = gdfile2.deviations[i]
         end
     end
+
     return GDFile(hashes, deviations, gdfile1.padsize)
 end
