@@ -46,13 +46,15 @@ function tobytes(bitvec::BitVector)::Vector{UInt8}
     size = leftover > 0 ? num_bytes + 1 : num_bytes
 
     bytes = Vector{UInt8}(undef, size)
-    i = 1
+    curr = 1
     @inbounds for i in 1:num_bytes
         bytes[i] = to_T(UInt8, bitvec[(i-1)*8+1:i*8])
+        curr = i
     end
 
+    curr += 1
     if leftover > 0
-        bytes[size] = to_T(UInt8, bitvec[(i-1)*8+1 : (i-1)*8+leftover])
+        bytes[size] = to_T(UInt8, bitvec[(curr-1)*8+1 : (curr-1)*8+leftover])
     end
 
     return bytes
@@ -82,17 +84,63 @@ function tobits(data::Vector{T}) where T <: Unsigned
     return bit_array
 end
 
+"""
+    tobits(data::Vector{T})
 
+Unpack an array into a bitarray, where each valze is padded on `8 * sizeof(T)`
+bits.
 
+/!/ Note that the LSB is in first position of the bitarray.
+"""
+function tobits_lsb(data::Vector{T}) where T <: Unsigned
+    numbits = 8 * sizeof(T)
+    bit_array = BitVector(undef, numbits * length(data))
+    masks = [1 << i for i in numbits-1:-1:0]
+
+    for (i, elem) in enumerate(data)
+        start = (i - 1) * numbits
+        @inbounds for (j, mask) in enumerate(masks)
+            bit_array[start+9-j] = elem & mask > 0
+        end
+    end
+
+    return bit_array
+end
 
 """
-    bits2uint([T<:Integer], bitarray)
+    tobytes(bitvec)
 
-Convert `bitarray` to an unsigned integer representation of type `T`.
+Pack `bitvec` into a compact array of byte. If `bitvec` is not divisible by 8,
+the remaining bits will be "padded" into one byte.
 """
-function bits2uint(T::Type{<:Unsigned}, bitarray::BitVector)
+function tobytes_lsb(bitvec::BitVector)::Vector{UInt8}
+    num_bytes = floor(length(bitvec) / 8) |> Int
+    leftover = length(bitvec) % 8
+    size = leftover > 0 ? num_bytes + 1 : num_bytes
+
+    bytes = Vector{UInt8}(undef, size)
+    curr = 1
+    @inbounds for i in 1:num_bytes
+        bytes[i] = bits2uint(UInt8, bitvec[(i-1)*8+1:i*8])
+        curr = i
+    end
+
+    curr += 1
+    if leftover > 0
+        bytes[size] = bits2uint(UInt8, bitvec[(curr-1)*8+1 : (curr-1)*8+leftover])
+    end
+
+    return bytes
+end
+
+"""
+    bits2uint(dtype, bitarray)
+
+Convert `bitarray` to an unsigned integer representation of type `dtype`.
+"""
+function bits2uint(dtype::Type{T}, bitarray::BitVector) where T <: Unsigned
     size = length(bitarray)
     return mapreduce(+, 1:size) do i
-        bitarray[i] ? 2 ^ (size-i) : 0
-    end |> T
+        bitarray[i] ? 2 ^ (i-1) : 0
+    end |> dtype
 end

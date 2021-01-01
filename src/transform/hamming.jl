@@ -12,7 +12,7 @@ struct Hamming <: AbstractTransformer
     codeword_size::Int
     num_paritybits::Int
     p_sub_matrix::BitMatrix
-    syndrome_table::Dict{Any, Any}
+    syndrome_table::Dict{UInt64, Int64}
 
     Hamming(codeword_size) = begin
         codeword_size *= 8
@@ -70,8 +70,8 @@ function create_syndrome_table(codeword_size, num_paritybits, p_sub_matrix)
     syndrome_table = Dict{UInt64, Int64}(0 => -1)
 
     for error_index in 1:codeword_size
-        # extrace the row instead of performing a dot product full of 0
-        binary_error = parity_check_matrix_T[error_index, :] 
+        # extract the row instead of performing a dot product full of 0
+        binary_error = parity_check_matrix_T[error_index, :]
         syndrome = bits2uint(UInt64, binary_error)
         syndrome_table[syndrome] = error_index
     end
@@ -87,8 +87,9 @@ Decode `data` by removing the parity bits.
 Return the decoded message as the `basis` and the error index as the
 `deviation`.
 """
-function transform(hamming::Hamming, data::Vector{UInt8})
-    codeword = tobits(data)
+function transform(hamming::Hamming, data::Vector{T}) where T <: Unsigned
+    # codeword = tobits(data)
+    codeword = reduce(vcat, digits.(Bool, data, base=2, pad=8))
     parity_bits = @view codeword[begin:hamming.num_paritybits]
     data = @view codeword[hamming.num_paritybits + 1:end]
     
@@ -98,13 +99,13 @@ function transform(hamming::Hamming, data::Vector{UInt8})
     
     error_index = hamming.syndrome_table[syndrome]
     
-    error_pattern = falses(length(codeword))
+    error_pattern = falses(hamming.codeword_size)
     error_pattern[error_index] = syndrome != 0 ? 1 : 0
     data_pattern = error_pattern[hamming.num_paritybits + 1:end]
     
     decoded_msg = BitVector(data .⊻ data_pattern)
     
-    basis = tobytes(decoded_msg)
+    basis = tobytes_lsb(decoded_msg)
     
     return basis, error_index
 end
@@ -117,15 +118,21 @@ index `deviation`.
 
 return the original byte array to which `transform()` has been applied.
 """
-function invtransform(hamming::Hamming, basis::Vector{UInt8}, deviation::Int32)
+function invtransform(hamming::Hamming, basis::Vector{UInt8}, deviation::Int64)
     # transforming the bitarray into bytes, add some padding on the last byte
     padding = hamming.num_paritybits % 8
-    message = tobits(basis)[1:end-padding]
+    # message = tobits(basis)
+    # message = vcat(message[1:length(message)-8], message[length(message)-7:end][padding+1:end])
+
+    message = reduce(vcat, digits.(Bool, basis, base=2, pad=8))
+    message = message[1:length(message) - padding]
+
     parity_bits = BitVector(map(col -> dot(message, col) & 1, eachcol(hamming.p_sub_matrix)))
     data = vcat(parity_bits, message)
+
     if deviation != -1
         data[deviation] ⊻= 1
     end
 
-    return tobytes(data)
+    return tobytes_lsb(data)
 end
