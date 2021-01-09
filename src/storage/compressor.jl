@@ -1,9 +1,16 @@
+using ..Transform: AbstractTransformer, transform, invtransform
+
+
 """
     Compressor(chunksize, transformer, fingerprint)
 
-Compress/Extract data according to the loaded configuration. A `Compressor` is
-stateless. It is focused on data compression/extraction but does not store any
-value for deduplication.
+Compresses/Extracts data according to the loaded configuration. A `Compressor` 
+is stateless. It is focused on data compression/extraction but does not store 
+any value for deduplication.
+
+fingerprint is a hashing function with the following signature:
+    
+    `fingerprint(data::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}`
 """
 mutable struct Compressor
     chunksize::Int
@@ -13,39 +20,44 @@ end
 
 
 """
-    hash(compressor::Compressor, data::Vector{Vector{UInt8}})
+    hashes(compressor, data)
 
-Hash each element in `data` with the `compressor.fingerprint` and return an
+Hashes each element in `data` with the `compressor.fingerprint` and return an
 array of hashes.
 """
-function hash(c::Compressor, data::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}
+function hashes(c::Compressor, data::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}
     return c.fingerprint.(data)
 end
 
-"""
-    compress(compressor::Compressor, data::Vector{T})
 
-Return a compressed version of `data`, as well as the bases which need to be
-sotred by `compressor` for reconstructing `data`. 
 """
-function compress(c::Compressor, data::Vector{T}) where T <: Unsigned
+    compress(compressor, data)
+
+Returns a compressed version of `data`, as well as the bases which need to be
+used by `compressor` for reconstructing `data`. 
+"""
+function compress(
+    c::Compressor,
+    data::Vector{T}
+)::Tuple{GDFile, Vector{Vector{UInt8}}} where T <: Unsigned
     chunkarray = ChunkArray{T}(data, c.chunksize)
-    bases = similar(chunkarray, Vector{UInt8})
-    deviations = similar(chunkarray, Vector{UInt8})
+    bases = Vector{Vector{UInt8}}(undef, length(chunkarray))
+    deviations = Vector{Vector{UInt8}}(undef, length(chunkarray))
     
     @inbounds for (i, chunk) ∈ enumerate(chunkarray)
         bases[i], deviations[i] = transform(c.transformer, chunk)
     end
 
-    return GDFile(hash(c, bases), deviations, chunkarray.padsize), bases
+    return GDFile(hashes(c, bases), deviations, chunkarray.padsize), bases
 end
 
-"""
-    extract(compressor::Compressor, bases::Vector{UInt8}, gdfile::GDFile)
 
-Decompress `gdfile` into its original representation.
 """
-function extract(c::Compressor, bases::Vector{Vector{UInt8}}, gdfile::GDFile)
+    extract(compressor, gdfile, bases)
+
+Decompresses `gdfile` into its original representation.
+"""
+function extract(c::Compressor, gdfile::GDFile, bases::Vector{Vector{UInt8}})
     data = reduce(
         vcat,
         [

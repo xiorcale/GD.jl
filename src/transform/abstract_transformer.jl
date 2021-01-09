@@ -1,7 +1,7 @@
 """
     AbstractTransformer
 
-Interface for creating a transformer.
+Interface to implement for creating a new transformer.
 """
 abstract type AbstractTransformer end
 
@@ -11,8 +11,11 @@ abstract type AbstractTransformer end
 Apply the `transformer` transformation to `data` and return a split 
 representation under the form (`basis`, `deviation`).
 """
-function transform(transformer::AbstractTransformer, data::Vector{T}) where T <: Unsigned 
-    transform(transformer, data)
+function transform(
+    ::AbstractTransformer,
+    ::Vector{T}
+)::Tuple{Vector{UInt8}, Vector{UInt8}} where T <: Unsigned 
+    # Nothing - this is an interface to implement...
 end
 
 """
@@ -21,6 +24,10 @@ end
 Reverse the transformation applied by `transformer` and return the original
 `data`.
 """
-function invtransform(transformer::AbstractTransformer, basis::Vector{UInt8}, deviation::Vector{UInt8})
-    invtransform(transformer, basis, deviation)
+function invtransform(
+    ::AbstractTransformer,
+    ::Vector{UInt8},
+    ::Vector{UInt8}
+)::Vector{T} where T <: Unsigned
+    # Nothing - this is an interface to implement...
 end

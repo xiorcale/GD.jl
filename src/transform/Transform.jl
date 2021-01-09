@@ -1,14 +1,23 @@
 module Transform
 
-include("bitarray_utils.jl")
 
+# --------------------------------
+# Include
+# --------------------------------
+include("binary_utils.jl")
 include("abstract_transformer.jl")
-export AbstractTransformer, transform, invtransform
-
-include("hamming.jl")
-export Hamming
-
 include("quantizer.jl")
-export Quantizer
+
+
+# --------------------------------
+# Export
+# --------------------------------
+export 
+    # interface
+    AbstractTransformer, transform, invtransform,
+
+    # transformer implementations
+    Quantizer
+
 
 end # module
