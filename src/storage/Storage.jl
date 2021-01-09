@@ -22,4 +22,7 @@ export
     # store
     Store, compress!, extract, get, update!, validate
 
+    # api
+    validate_remote!, return_bases, setup_api_endpoint
+
 end # module

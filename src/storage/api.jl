@@ -3,6 +3,23 @@ using Serialization: serialize, deserialize
 
 
 """
+    setup_api_endpoint(store, host, port)
+
+Mounts the `return_bases()` endpoint at `http://host:port/bases`.
+"""
+function setup_api_endpoint(store::Store, host::String, port::Int)
+    router = HTTP.Router()
+    HTTP.@register(
+        router,
+        "GET",
+        "/bases",
+        (request::HTTP.Request) -> return_bases(store, request)
+    )
+    HTTP.serve(router, host, port)
+end
+
+
+"""
     validate_remote!(store, gdfile, baseurl)
 
 [API CLIENT] Validates a file which comes from a remote location. To do so,
