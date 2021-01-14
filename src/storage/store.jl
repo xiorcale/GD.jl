@@ -25,7 +25,7 @@ end
 Updates `store.database` by mapping `hashes` to `bases`.
 """
 function update!(s::Store, hashes::Vector{Vector{UInt8}}, bases::Vector{Vector{UInt8}})
-    for (h, b) ∈ zip(hashes, bases)
+    @inbounds for (h, b) ∈ zip(hashes, bases)
         s.database[h] = b
     end
 end

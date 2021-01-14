@@ -44,7 +44,7 @@ function unpatch(gdfile1::GDFile, gdfile2::GDFile)::GDFile
     hashes = deepcopy(gdfile1.hashes)
     deviations = deepcopy(gdfile1.deviations)
 
-    for i in 1:length(hashes)
+    @inbounds for i in 1:length(hashes)
         if hashes[i] == [0x00]
             hashes[i] = gdfile2.hashes[i]
         end

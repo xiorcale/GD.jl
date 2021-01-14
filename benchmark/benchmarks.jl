@@ -19,16 +19,18 @@ quantizer = GD.Transform.Quantizer{T}(chunksize, msbsize)
 compressor = GD.Storage.Compressor(chunksize, quantizer, sha1)
 store = GD.Storage.Store(compressor, Dict(), 0, 0)
 
-suite["transform"]["quantize"] = @benchmarkable [
-    GD.Transform.transform(quantizer, datachunk)
-    for i in 1:4*1024
-]
+suite["transform"]["quantize"] = @benchmarkable begin
+    Threads.@threads for i in 1:4*1024
+        GD.Transform.transform(quantizer, datachunk)
+    end
+end
 
 b, d = GD.Transform.transform(quantizer, datachunk)
-suite["transform"]["dequantize"] = @benchmarkable [
+suite["transform"]["dequantize"] = @benchmarkable begin
+    Threads.@threads for i in 1:4*1024
         GD.Transform.invtransform(quantizer, b, d)
-        for i in 1:4*1024
-]
+    end
+end
 
 
 suite["storage"]["compress"] = @benchmarkable GD.Storage.compress(compressor, data)

@@ -44,8 +44,8 @@ function compress(
     bases = Vector{Vector{UInt8}}(undef, length(chunkarray))
     deviations = Vector{Vector{UInt8}}(undef, length(chunkarray))
     
-    @inbounds for (i, chunk) ∈ enumerate(chunkarray)
-        bases[i], deviations[i] = transform(c.transformer, chunk)
+    @inbounds Threads.@threads for i in 1:length(chunkarray)
+        bases[i], deviations[i] = transform(c.transformer, chunkarray[i])
     end
 
     return GDFile(hashes(c, bases), deviations, chunkarray.padsize), bases
@@ -58,12 +58,12 @@ end
 Decompresses `gdfile` into its original representation.
 """
 function extract(c::Compressor, gdfile::GDFile, bases::Vector{Vector{UInt8}})
-    data = reduce(
-        vcat,
-        [
-            invtransform(c.transformer, b, d)
-            for (b, d) in zip(bases, gdfile.deviations)
-        ],
-    )
+    zipped = (collect ∘ zip)(bases, gdfile.deviations)
+    data = Vector(undef, length(zipped) * c.chunksize)
+
+    @inbounds Threads.@threads for i in 1:length(zipped)
+        data[(i-1) * c.chunksize + 1:i*c.chunksize] = invtransform(c.transformer, zipped[i][1], zipped[i][2])
+    end
+
     return data[1:end-gdfile.padsize]
 end
