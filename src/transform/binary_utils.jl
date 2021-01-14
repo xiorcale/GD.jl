@@ -37,14 +37,12 @@ function pack(::Type{T}, bitvec::BitVector)::Vector{T} where T <: Unsigned
     size = leftover > 0 ? num_bytes + 1 : num_bytes
 
     data = Vector{T}(undef, size)
-    curr = 1
-    @inbounds for i in 1:num_bytes
+    @inbounds Threads.@threads for i in 1:num_bytes
         data[i] = convert(T, bitvec[(i-1)*numbits+1:i*numbits])
-        curr = i
     end
 
     if leftover > 0
-        curr += 1
+        curr = num_bytes + 1
         data[size] = convert(T, bitvec[(curr-1)*numbits+1 : (curr-1)*numbits+leftover])
     end
 
@@ -65,10 +63,10 @@ function unpack(data::Vector{T})::BitVector where T <: Unsigned
     bit_array = BitVector(undef, numbits * length(data))
     masks = [1 << i for i in numbits-1:-1:0]
 
-    for (i, elem) in enumerate(data)
+    @inbounds for i in 1:length(data)
         start = (i - 1) * numbits
         @inbounds for (j, mask) in enumerate(masks)
-            bit_array[start+j] = elem & mask > 0
+            bit_array[start+j] = data[i] & mask > 0
         end
     end
 

@@ -4,7 +4,7 @@ using SHA
 
 const suite = BenchmarkGroup()
 
-suite["transform"] = BenchmarkGroup(["quantizer"])
+suite["transform"] = BenchmarkGroup(["quantizer", "binary_utils"])
 suite["storage"] = BenchmarkGroup(["compressor", "gdfile", "store"])
 
 datachunk = rand(UInt8, 256) 
@@ -18,6 +18,12 @@ lsbsize = 0x03
 quantizer = GD.Transform.Quantizer{T}(chunksize, msbsize)
 compressor = GD.Storage.Compressor(chunksize, quantizer, sha1)
 store = GD.Storage.Store(compressor, Dict(), 0, 0)
+
+
+bitvector = BitVector(rand(Bool, 1024 * 1024 * 8)) # 1Mb
+suite["transform"]["pack"] = @benchmarkable GD.Transform.pack(UInt8, bitvector)
+suite["transform"]["unpack"] = @benchmarkable GD.Transform.unpack(data)
+
 
 suite["transform"]["quantize"] = @benchmarkable begin
     Threads.@threads for i in 1:4*1024
