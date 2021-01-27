@@ -66,6 +66,38 @@ from a remote location, as the local store may lack certain bases required for
 the decompression.
 
 
+## Working with distributed stores for network compression
+
+`GD.jl` provides a tiny HTTP API which can be setup for inter-store communication.
+This extension is experimental, very basic and certainly not targeting high-performance
+communication. Use at your own risk.
+
+> Okay, okay, give me the goods now!
+
+```julia
+host = "127.0.0.1"
+port = "9090"
+@async Storage.setup_api_endpoint(store, host, port)
+```
+
+Where `http://host:port` is the baseurl used to contact the store endpoint.
+
+Decompressing a file coming from a remote location is then a two-step process:
+
+```julia
+# 1. Validate the `GDFile` coming from a remote location and requesting the
+#    missing bases for our local store. 
+Storage.validate_remote!(store, data, "http://127.0.0.1:9090")
+
+# 2. Extract as usual now that our file is valid.
+data = Storage.extract(store, data)
+```
+
+:warning: This functionality has a serious limitation: validating a `GDFile`
+by requesting bases from a store which do not possess them will generate an
+unhandled error.
+
+
 ## Architecture
 
 Internally, the store is composed of five modules working together:
