@@ -8,7 +8,7 @@ suite["transform"] = BenchmarkGroup(["quantizer", "binary_utils"])
 suite["storage"] = BenchmarkGroup(["compressor", "gdfile", "store"])
 
 datachunk = rand(UInt8, 256) 
-data = rand(UInt8, 1024 * 1024) # 1Mb
+data = rand(UInt8, 1024 * 1024) # 1MB
 
 chunksize = 256
 T = UInt8
@@ -20,7 +20,7 @@ compressor = GD.Storage.Compressor(chunksize, quantizer, sha1)
 store = GD.Storage.Store(compressor, Dict(), 0, 0)
 
 
-bitvector = BitVector(rand(Bool, 1024 * 1024 * 8)) # 1Mb
+bitvector = BitVector(rand(Bool, 1024 * 1024 * 8)) # 1MB
 suite["transform"]["pack"] = @benchmarkable GD.Transform.pack(UInt8, bitvector)
 suite["transform"]["unpack"] = @benchmarkable GD.Transform.unpack(data)
 
