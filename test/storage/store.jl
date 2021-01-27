@@ -15,14 +15,14 @@ using SHA
     @testset "UInt8 GD" begin
         quantizer = GD.Transform.Quantizer{UInt8}(chunksize, 0x05)
         compressor = GD.Storage.Compressor(chunksize, quantizer, sha1)
-        store = GD.Storage.Store(compressor, Dict(), 0, 0)
+        store = GD.Storage.Store(compressor, Dict())
         gd_compress_extract(UInt8, store)
     end
 
     @testset "UInt16 GD" begin
         quantizer = GD.Transform.Quantizer{UInt16}(chunksize, 0x000C)
         compressor = GD.Storage.Compressor(chunksize, quantizer, sha1)
-        store = GD.Storage.Store(compressor, Dict(), 0, 0)
+        store = GD.Storage.Store(compressor, Dict())
         gd_compress_extract(UInt16, store)
     end
 end
