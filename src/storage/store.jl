@@ -1,5 +1,3 @@
-
-
 """
     Store(database)
 
@@ -10,12 +8,6 @@ the `database`.
 mutable struct Store
     compressor::Compressor
     database::Dict{Vector{UInt8}, Vector{UInt8}}
-    # stats
-    l::ReentrantLock
-    num_unknown_bases::Int
-    num_requested_bases::Int
-
-    Store(c, d, nub, nrb) = new(c, d, ReentrantLock(), nub, nrb)
 end
 
 
@@ -48,8 +40,8 @@ end
     extract(store::Store, gdfile::GDFile)
 
 Decompresses the `gdfile` into its original representation. This methods assumes
-that a valide `GDFile` is given as input (the `validate()` method must return
-∅).
+that a valide `GDFile` is given as input (the `validate()` method must return 
+`[]`).
 """
 function extract(s::Store, gdfile::GDFile)::Vector
     bases = get(s, gdfile.hashes)
@@ -62,7 +54,7 @@ end
 
 Checks wether `gdfile` can be extracted by `store` or not by returning the list 
 of unknown hashes used by `gdfile`. The `GDFile` is said valid if `validate()`
-returns ∅.
+returns `[]`.
 """
 function validate(s::Store, gdfile::GDFile)::Vector{Vector{UInt8}}
     return setdiff(gdfile.hashes, keys(s.database))

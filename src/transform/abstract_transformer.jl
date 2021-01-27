@@ -8,7 +8,7 @@ abstract type AbstractTransformer end
 """
     transform(transformer, data)
 
-Apply the `transformer` transformation to `data` and return a split 
+Applies the `transformer` transformation to `data` and returns a split 
 representation under the form (`basis`, `deviation`).
 """
 function transform(
@@ -21,7 +21,7 @@ end
 """
     invtransform(transformer, basis, deviation)
 
-Reverse the transformation applied by `transformer` and return the original
+Reverses the transformation applied by `transformer` and returns the original
 `data`.
 """
 function invtransform(
