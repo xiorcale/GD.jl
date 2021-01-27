@@ -20,6 +20,52 @@ design of the library tries to follow these guidelines:
   it, while staying “transformation-agnostic”.
   
 
+## Getting started
+
+Setting up a local store can be done in three simple steps:
+
+```julia
+using GD: Storage, Transform
+using SHA: sha1
+
+
+# 1. Pick a transformation to compress data.
+msbsize = 0x06
+chunksize = 256
+transformer = Transform.Quantizer{UInt8}(chunksize, msbsize)
+
+# 2. Configure the compressor.
+fingerprint = sha1
+compressor = Storage.Compressor(chunksize, transformer, fingerprint)
+
+# 3. Instanciate the in-memory data store.
+database = Dict()
+store = Storage.Store(compressor, database)
+```
+
+Once the setup in place, using the API to compress and extract data is pretty
+straightforward:
+
+```julia
+# fake data
+data = rand(UInt8, 1000)
+
+# Compress data.
+gdfile = Storage.compress!(store, data)
+
+# Check file validity.
+@assert Storage.validate(store, gdfile) == UInt8[]
+
+# Extract gdfile.
+@assert Storage.extract(store, gdfile) == data
+```
+
+There is no need to check the file validity as long as only one local store is
+used. However, this function is coming handy when decompressing `GDFile` coming
+from a remote location, as the local store may lack certain bases required for
+the decompression.
+
+
 ## Architecture
 
 Internally, the store is composed of five modules working together:
