@@ -1,6 +1,6 @@
 # GD.jl
 
-`GD.jl` is an in-memory Generalized Deduplication (GD) [1] data store which can be
+`GD.jl` is an in-memory [Generalized Deduplication (GD)][1] data store which can be
 used for compressing the network traffic of a distributed infrastructure. The
 design of the library tries to follow these guidelines:
 
@@ -92,4 +92,11 @@ The following transformations are available for now:
 
 ## References
 
-- [\[1\] Generalized Deduplication: Lossless Compression for Large Amounts of Small IoT Data](https://pure.au.dk/portal/files/149814536/EW2019_accepted.pdf)
+Generalized deduplication literature:
+
+- [Generalized Deduplication: Lossless Compression for Large Amounts of Small IoT Data](https://pure.au.dk/portal/files/149814536/EW2019_accepted.pdf)
+- [Lossless Compression of Time Series Data with Generalized Deduplication](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9013957)
+- [A Randomly Accessible Lossless Compression Scheme for Time-Series Data](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9155450)
+- [Hermes: Enabling Energy-efficient IoT Networks with Generalized Deduplication](https://arxiv.org/pdf/2005.11158.pdf)
+
+[1]: https://pure.au.dk/portal/files/149814536/EW2019_accepted.pdf
