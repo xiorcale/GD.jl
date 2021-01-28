@@ -10,7 +10,10 @@ any value for deduplication.
 
 fingerprint is a hashing function with the following signature:
     
-    `fingerprint(data::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}`
+    fingerprint(data::Vector{Vector{UInt8}})::Vector{Vector{UInt8}}
+
+Classic examples of fingerprints functions are `CRC32` and `SHA` from the
+standard library.
 """
 mutable struct Compressor
     chunksize::Int

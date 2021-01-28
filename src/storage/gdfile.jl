@@ -25,7 +25,7 @@ diff(x::Vector{UInt8}, y::Vector{UInt8}) = (x == y ? [0x00] : x)
     patch(gdfile1, gdfile2)
 
 Patches `gdfile1` by replacing the hashes/deviations which are the same as
-`gdfile2` by `0x00`.
+`gdfile2` by `[0x00]`.
 """
 function patch(gdfile1::GDFile, gdfile2::GDFile)::GDFile
     hashes = diff.(gdfile1.hashes, gdfile2.hashes)

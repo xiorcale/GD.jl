@@ -34,7 +34,7 @@ end
 """
     transform(quantizer, data)
 
-Cut each element from data into a basis containing the `quantizer.msbsize` MSB 
+Cuts each element from `data` into a basis containing the `quantizer.msbsize` MSB 
 of the element, and a deviation containing the `quantizer.lsbsize` LSB of the
 element.
 
@@ -78,7 +78,7 @@ end
 """
     invtransform(quantizer, basis, deviation)
 
-Extract each couple (MSB, LSB) from `basis` and `deviation` and rebuild the 
+Extracts each couple (MSB, LSB) from `basis` and `deviation` and rebuilds the 
 original data by combining them.
 
 Returns the original byte array which has been transformed by `transform()`.
