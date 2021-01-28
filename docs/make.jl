@@ -2,11 +2,11 @@ using Documenter, DocumenterLaTeX
 using GD
 
 makedocs(
-    sitename = "GD",
+    sitename = "GD.jl",
     authors = "xiorcale",
     # format = DocumenterLaTeX.LaTeX(),
     pages = [
-        "GD" => "index.md",
+        "Home" => "index.md",
         "Storage" => "storage.md",
         "Transform" => "transform.md"
     ]

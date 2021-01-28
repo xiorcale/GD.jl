@@ -1,4 +1,4 @@
-# GD
+# GD.jl
 
 `GD.jl` is an in-memory Generalized Deduplication (GD) data store which can be
 used for compressing the network traffic of a distributed infrastructure. The
